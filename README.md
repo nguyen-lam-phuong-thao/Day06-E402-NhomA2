@@ -1,3 +1,11 @@
+## Thông tin nhóm
+
+| MSSV | Họ và tên |
+| --- | --- |
+| 2A202600765 | Cao Thị Thu Hà |
+| 2A202600709 | Hà Trung Kiên |
+| 2A202600873 | Nguyễn Lâm Phương Thảo |
+| 2A202600689 | Nguyễn Bình Huy |
 # Coffeeholic
 
 Coffeeholic là prototype gợi ý quán cafe theo phong cách không gian bằng hình ảnh. Người dùng chọn các quán mẫu đúng "vibe", backend dùng embedding ảnh và `Cosine Similarity` để trả ra các quán có không gian gần nhất.
