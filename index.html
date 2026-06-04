@@ -900,7 +900,7 @@
           <div class="heart-dot" id="dot-2"></div>
           <div class="heart-dot" id="dot-3"></div>
         </div>
-        <span id="like-label" style="font-size:11px;color:#7B4F2E;">0/3</span>
+        <span id="like-label" style="font-size:11px;color:#7B4F2E;">0 liked · 0 picks</span>
       </div>
     </div>
 
@@ -1097,6 +1097,9 @@ let deckIndex    = 0;    // pointer into deck
 let likedCafes   = [];   // cafes the user hearted
 let topResults   = [];   // computed recommendations (array of cafe objects with .similarity)
 let currentDetailCafe = null;
+let selectionCount = 0;     // Tổng số lượt đã chọn: Like + Nope
+let choiceLocked = false;   // Chặn bấm hoặc swipe nhiều lần
+let analysisStarted = false;
 
 /* ── Navigation ── */
 function showScreen(id) {
@@ -1112,11 +1115,16 @@ function goBack(target) {
 
 /* ── Screen 1 → 2 ── */
 function goToSwipe() {
-  // Shuffle cafes
   deck = [...ALL_CAFES].sort(() => Math.random() - .5);
   deckIndex = 0;
   likedCafes = [];
-  updateDots(0);
+  topResults = [];
+
+  selectionCount = 0;
+  choiceLocked = false;
+  analysisStarted = false;
+
+  updateDots();
   renderDeck();
   showScreen('screen-swipe');
 }
@@ -1224,28 +1232,69 @@ function attachSwipe(cardEl, cafe) {
   document.addEventListener('touchend', onEnd);
 }
 
-/* ── Like / Nope helpers ── */
-function doLike(cardEl, cafe) {
-  cardEl.style.transform = 'translate(600px,-50px) rotate(25deg)';
-  cardEl.style.opacity = '0';
-  likedCafes.push(cafe);
-  deckIndex++;
-  updateDots(likedCafes.length);
+/*
+  Match rules:
+  1. Người dùng luôn chọn tối thiểu 3 lượt đầu tiên.
+  2. Sau lượt thứ 3, nếu đã có ít nhất 1 Like -> loading ngay.
+  3. Nếu 3 lượt đầu đều Nope -> tiếp tục chọn và loading ngay khi xuất hiện Like đầu tiên.
+
+  Vector dùng để match luôn là trung bình vector của toàn bộ cafe trong likedCafes.
+*/
+function shouldStartAnalysis() {
+  // Chỉ match sau khi đã chọn ít nhất 3 lượt và đã Like ít nhất 1 cafe.
+  // Bao gồm:
+  // - Like/Nope/Nope -> loading sau pick 3
+  // - Nope/Like/Nope -> loading sau pick 3
+  // - Nope/Nope/Like -> loading sau pick 3
+  // - Like/Like/Like -> loading sau pick 3
+  // - Nope/Nope/Nope/.../Like -> loading ngay tại lượt Like đầu tiên
+  return selectionCount >= 3 && likedCafes.length > 0;
+}
+
+function finishChoice(cardEl) {
   setTimeout(() => {
     cardEl.remove();
-    if (likedCafes.length >= 3) {
+
+    if (shouldStartAnalysis()) {
+      analysisStarted = true;
       startAnalysis();
-    } else {
-      renderDeck();
+      return;
     }
+
+    choiceLocked = false;
+    renderDeck();
   }, 320);
+}
+/* ── Like / Nope helpers ── */
+function doLike(cardEl, cafe) {
+  if (choiceLocked || analysisStarted) return;
+
+  choiceLocked = true;
+
+  cardEl.style.transform = 'translate(600px,-50px) rotate(25deg)';
+  cardEl.style.opacity = '0';
+
+  likedCafes.push(cafe);
+  deckIndex++;
+  selectionCount++;
+
+  updateDots();
+  finishChoice(cardEl);
 }
 
 function doNope(cardEl, cafe) {
+  if (choiceLocked || analysisStarted) return;
+
+  choiceLocked = true;
+
   cardEl.style.transform = 'translate(-600px,-50px) rotate(-25deg)';
   cardEl.style.opacity = '0';
+
   deckIndex++;
-  setTimeout(() => { cardEl.remove(); renderDeck(); }, 320);
+  selectionCount++;
+
+  updateDots();
+  finishChoice(cardEl);
 }
 
 /* ── Button handlers ── */
@@ -1269,11 +1318,17 @@ function handleLocation() {
 }
 
 /* ── Like dots ── */
-function updateDots(count) {
-  ['dot-1','dot-2','dot-3'].forEach((id,i) => {
-    document.getElementById(id).classList.toggle('filled', i < count);
+function updateDots() {
+  const likeCount = likedCafes.length;
+
+  ['dot-1', 'dot-2', 'dot-3'].forEach((id, i) => {
+    document
+      .getElementById(id)
+      .classList.toggle('filled', i < likeCount);
   });
-  document.getElementById('like-label').textContent = `${count}/3`;
+
+  document.getElementById('like-label').textContent =
+    `${likeCount} liked · ${selectionCount} picks`;
 }
 
 /* ── Analysis flow ── */
