@@ -1,56 +1,126 @@
-# Team C6
-2A202600765 - Cao Thị Thu Hà
-2A202600709 - Hà Trung Kiên
-2A202600873 - Nguyễn Lâm Phương Thảo
-2A202600689 - Nguyễn Bình Huy
+# Product Spec: Coffeeholic
 
-# Product SPEC: Coffeeholic 
+*Tài liệu đặc tả sản phẩm Day 06 của nhóm Coffeeholic*
 
-*Tài liệu Đặc tả Sản phẩm (Day 06) - Nhóm Coffeeholic*
+## 1. Thông tin nhóm
 
-## 1. Bằng chứng (Evidence)
-Nhu cầu giải quyết vấn đề xuất phát từ các quan sát thực tế và phân tích hành vi của người dùng mục tiêu:
-- **Trải nghiệm trực tiếp:** Khi tìm kiếm không gian cafe với từ khóa như "yên tĩnh, cổ điển" trên bản đồ số, kết quả trả về đa phần thiếu chính xác do hệ thống ưu tiên từ khóa (keyword) thay vì cảm nhận thẩm mỹ (vibe). Việc người dùng thu thập hình ảnh trên các nền tảng mạng xã hội, sau đó đối chiếu lại địa chỉ tốn nhiều thời gian và làm gián đoạn trải nghiệm.
-- **Khảo sát mạng xã hội:** Các từ khóa như "Review quán cafe", "quán cf Hà Nội/Sài Gòn" liên tục lọt top xu hướng (trending) trên nền tảng TikTok. Sự phát triển mạnh mẽ của hàng loạt hội nhóm chuyên chủ đề này trên Facebook minh chứng cho mức độ quan tâm đặc biệt lớn của giới trẻ đối với việc tìm kiếm các địa điểm có phong cách thẩm mỹ riêng. Mặc dù nhu cầu rất cao, họ vẫn gặp khó khăn trong việc diễn đạt chính xác sở thích đó bằng từ khóa văn bản trên các công cụ tìm kiếm truyền thống.
+| MSSV | Họ và tên |
+| --- | --- |
+| 2A202600765 | Cao Thị Thu Hà |
+| 2A202600709 | Hà Trung Kiên |
+| 2A202600873 | Nguyễn Lâm Phương Thảo |
+| 2A202600689 | Nguyễn Bình Huy |
 
-## 2. Lát cắt để build (Build slice)
-Định hướng giải pháp cho **người dùng có nhu cầu tìm kiếm không gian cafe**: Nguyên mẫu (prototype) sẽ sử dụng AI hiển thị 3 hình ảnh đại diện ban đầu (Cold Start). Sau khi **người dùng lựa chọn hình ảnh phù hợp**, hệ thống sử dụng thuật toán Cosine Similarity để tính trung bình cộng vector của các ảnh đã chọn, từ đó **đề xuất danh sách 3 quán có độ tương đồng cao nhất về không gian** (có tối ưu về mặt khoảng cách di chuyển).
+## 2. Tóm tắt sản phẩm
 
-## 3. AI Product Canvas
-- **Value (Giá trị):** Sản phẩm dành cho tập khách hàng chú trọng không gian thẩm mỹ nhưng gặp trở ngại khi đọc các bài đánh giá dài hoặc khó diễn đạt sở thích bằng từ khóa. AI hỗ trợ thay thế luồng tìm kiếm truyền thống bằng tương tác thị giác toàn diện (ra quyết định trực tiếp qua hình ảnh).
-- **Trust (Niềm tin):** Khi AI đưa ra kết quả không tương đồng với lựa chọn ban đầu, người dùng có thể nhận diện ngay lập tức qua hình ảnh và hoàn tác bằng tính năng "Kết quả không phù hợp" để thiết lập lại thao tác. Kết quả của AI được đảm bảo độ tin cậy thông qua việc sử dụng tập dữ liệu nguồn đã được đội ngũ kiểm duyệt khắt khe từ trước.
-- **Feasibility (Tính khả thi):** Nguyên mẫu có tính khả thi cao trong thời gian ngắn. Chi phí tính toán Cosine Similarity ở mức tối thiểu do sử dụng cơ sở dữ liệu tĩnh gồm 20-40 quán đã được phân loại và trích xuất đặc trưng vector (embedding) sẵn.
-- **Tín hiệu học (Learning Signal):** Phản hồi "Kết quả không phù hợp" hoặc hành vi xem chi tiết lộ trình của một quán sẽ được hệ thống lưu lại, tạo nguồn dữ liệu để tối ưu hóa trọng số thuật toán gom cụm vector cho các phiên bản sau.
+**Coffeeholic** là công cụ gợi ý quán cafe theo phong cách không gian thay vì chỉ dựa trên từ khóa văn bản. Người dùng chọn những hình ảnh quán cafe có "vibe" đúng gu của mình, sau đó hệ thống dùng AI để tìm ra các quán có không gian tương đồng nhất.
 
-## 4. Tăng năng lực hay tự động hóa (Augment or Automate)
-Sản phẩm được thiết kế theo hướng **Tăng năng lực (Augmentation)**.
-- AI đảm nhiệm việc phân tích sở thích thị giác, xử lý lượng dữ liệu lớn để chắt lọc thành 3 đề xuất tối ưu nhất, tạo tiền đề cho quyết định của người dùng.
-- **Lý do:** Sở thích thẩm mỹ là yếu tố mang tính chủ quan cao. Việc tự động hóa hoàn toàn (Automate) quá trình lựa chọn có thể dẫn đến rủi ro trải nghiệm kém, gây lãng phí thời gian và chi phí di chuyển của người dùng. Phương pháp "Tăng năng lực" giúp duy trì sự chủ động và trải nghiệm khám phá của khách hàng.
+### Mục tiêu của lát cắt MVP
 
-## 5. Bốn đường đi của trải nghiệm
-- **Đường thuận (Happy Path):** AI xử lý với độ tin cậy cao. Người dùng chọn 1-2 hình ảnh đại diện -> AI đề xuất 3 quán có không gian tương đồng với đánh giá thực tế tốt -> Người dùng xem lộ trình và đưa ra quyết định.
-- **Khi AI không chắc (Low-confidence):** AI gặp khó khăn do người dùng lựa chọn các hình ảnh mang phong cách hoàn toàn đối lập. Hệ thống thông báo: *"Rất khó để gợi ý chính xác không gian theo lựa chọn này"* và yêu cầu người dùng chỉ định lại 1-2 phong cách ưu tiên.
-- **Khi AI sai (Failure):** Kết quả đề xuất không khớp với phong cách mong muốn. Người dùng sử dụng nút `Kết quả không phù hợp` để loại bỏ đề xuất hiện tại.
-- **Khi người dùng sửa (Correction):** Thao tác `Kết quả không phù hợp` sẽ thiết lập lại giao diện hình ảnh ban đầu, đồng thời hệ thống ghi nhận tệp log (lịch sử sự kiện) về độ sai lệch của nhóm vector, phục vụ công tác kiểm thử và cải tiến thuật toán nội bộ.
+- Hiển thị bộ ảnh đại diện ban đầu để người dùng chọn nhanh.
+- Nhận từ 1 đến 2 lựa chọn của người dùng.
+- Tính embedding trung bình và đo độ tương đồng bằng `Cosine Similarity`.
+- Trả về 3 quán cafe phù hợp nhất với phong cách đã chọn.
 
-## 6. Những kiểu lỗi đáng lo nhất
-**Kiểu lỗi 1: Giảm độ chính xác của Model (Vector Cancellation)**
-- *Nguyên nhân:* Dữ liệu đầu vào thiếu nhất quán (người dùng lựa chọn các bức ảnh mang phong cách hoàn toàn trái ngược nhau).
-- *Hậu quả:* Hệ thống đưa ra các gợi ý thiếu tính đồng nhất, làm giảm trải nghiệm và độ tin cậy của ứng dụng.
-- *Cách xử lý:* Giới hạn số lượng hình ảnh tối đa được phép chọn. Nếu điểm tương đồng (Cosine Score) ở mức thấp, hệ thống từ chối truy xuất và yêu cầu người dùng xác định lại ưu tiên.
+## 3. Bằng chứng vấn đề (Evidence)
 
-**Kiểu lỗi 2: Sai lệch giữa hình ảnh và thực tế (Expectation vs. Reality Mismatch)**
-- *Nguyên nhân:* Hệ thống phân tích hình ảnh chính xác, nhưng hình ảnh đầu vào đã qua chỉnh sửa quá mức, không phản ánh đúng không gian thực tế hoặc chất lượng dịch vụ đã xuống cấp.
-- *Hậu quả:* Người dùng tốn thời gian và chi phí di chuyển nhưng trải nghiệm không như kỳ vọng, dẫn đến việc từ bỏ sử dụng ứng dụng.
-- **Cách xử lý:** Áp dụng phương pháp kiểm soát chất lượng dữ liệu từ nguồn. Khác với việc thu thập dữ liệu tự động ồ ạt, cơ sở dữ liệu tĩnh sử dụng trong nguyên mẫu (MVP) được đội ngũ trực tiếp thẩm định và kiểm duyệt thủ công nhằm đảm bảo không gian thực tế khớp chính xác với hình ảnh cung cấp.
+Nhu cầu giải quyết bài toán này xuất phát từ quan sát thực tế và hành vi rõ ràng của nhóm người dùng mục tiêu.
 
-## 7. Kế hoạch kiểm thử và bằng chứng demo
-- **Kịch bản tiêu chuẩn (Happy Case):** Lựa chọn 1 hình ảnh quán mang phong cách cổ điển (vintage). *Kỳ vọng:* AI đề xuất 3 quán có thiết kế tương đồng.
-- **Kịch bản phức tạp (Corner Case):** Lựa chọn kết hợp 1 hình ảnh phong cách tối (dark-academia) và 1 hình ảnh không gian mở nhiều ánh sáng. *Kỳ vọng:* Hệ thống phát hiện độ nhiễu, hiển thị thông báo yêu cầu người dùng chọn lại thay vì xuất ra kết quả sai lệch.
-- **Bằng chứng lưu giữ:** Đội ngũ lưu trữ tệp dữ liệu tĩnh (CSV/JSON), mã nguồn (script) tính toán vector và chuẩn bị sẵn video chạy thử nghiệm hai kịch bản trên nhằm phòng ngừa rủi ro kỹ thuật khi trình bày (demo).
+- **Trải nghiệm tìm quán hiện tại chưa tốt:** Khi người dùng tìm trên bản đồ với các từ khóa như "yên tĩnh", "cổ điển", "ấm cúng", hệ thống thường ưu tiên keyword hơn là cảm nhận thẩm mỹ. Kết quả trả về vì thế dễ lệch với vibe mà người dùng thực sự muốn.
+- **Người dùng phải tự ghép nhiều nguồn thông tin:** Nhiều bạn phải lưu ảnh trên TikTok, Instagram hoặc Facebook, sau đó mới đi dò địa chỉ trên Google Maps. Quy trình này mất thời gian và làm đứt mạch trải nghiệm.
+- **Nhu cầu tìm quán theo phong cách là có thật:** Các nội dung như "review quán cafe", "quán cafe Hà Nội", "quán cafe Sài Gòn" thường xuyên đạt lượng tương tác cao trên TikTok và Facebook. Điều đó cho thấy người dùng quan tâm mạnh tới trải nghiệm không gian, nhưng công cụ tìm kiếm hiện tại chưa hỗ trợ họ diễn đạt nhu cầu này đủ tốt.
 
-## 8. Phân công
-- **Huy:** Quản lý tài liệu chuyên môn (Product Canvas, Sơ đồ UX Flow), xây dựng nội dung trình bày (Slide) và trực tiếp thuyết trình.
-- **Hà:** Thiết kế Frontend, chịu trách nhiệm kiểm thử hệ thống.
-- **Kiên:** Xử lý và chuẩn bị cơ sở dữ liệu (Dataset tĩnh 30 quán, gắn nhãn hình ảnh và xuất dữ liệu vector embeddings).
-- **Thảo:** Phát triển Backend (xây dựng logic thuật toán trung bình cộng Vector và Cosine Similarity, cung cấp API xuất kết quả).
+## 4. Lát cắt để build (Build Slice)
+
+Prototype tập trung vào một bài toán hẹp nhưng có giá trị rõ ràng:
+
+- Người dùng muốn tìm quán cafe theo phong cách không gian.
+- Hệ thống hiển thị các ảnh đại diện ban đầu để xử lý bài toán cold start.
+- Sau khi người dùng chọn ảnh phù hợp, AI tính vector đại diện cho sở thích đó.
+- Hệ thống gợi ý ra 3 quán có độ tương đồng cao nhất về hình ảnh và không gian.
+- Trong phạm vi MVP, tập dữ liệu là tập tĩnh đã được kiểm duyệt thủ công để tăng độ tin cậy cho demo.
+
+## 5. AI Product Canvas
+
+| Trục | Nội dung |
+| --- | --- |
+| **Value** | Sản phẩm giúp người dùng tìm quán cafe theo thẩm mỹ không gian mà không cần mô tả dài hoặc tìm đúng từ khóa. Trải nghiệm chính là chọn bằng mắt, thay vì tìm bằng văn bản. |
+| **Trust** | Nếu AI gợi ý chưa đúng, người dùng có thể nhận ra ngay qua hình ảnh và dùng nút `Kết quả không phù hợp` để yêu cầu làm lại. Độ tin cậy còn được tăng nhờ dữ liệu đầu vào đã qua kiểm duyệt thủ công. |
+| **Feasibility** | MVP khả thi trong thời gian ngắn vì chỉ dùng tập dữ liệu tĩnh khoảng 20 đến 40 quán, embedding được xử lý trước, còn runtime chỉ cần truy xuất và tính `Cosine Similarity`. |
+| **Learning Signal** | Các tín hiệu như `Kết quả không phù hợp`, hành vi chọn seed, hoặc hành vi mở chỉ đường có thể được lưu lại để cải thiện logic gợi ý ở các phiên bản sau. |
+
+## 6. Augment hay Automate?
+
+Sản phẩm đi theo hướng **Augmentation**.
+
+- AI làm phần khó: hiểu sở thích thị giác, xử lý dữ liệu và rút ra danh sách gợi ý tốt nhất.
+- Người dùng vẫn giữ quyền quyết định cuối cùng: xem quán, cân nhắc khoảng cách và chọn nơi phù hợp.
+
+### Lý do chọn hướng này
+
+Sở thích về thẩm mỹ là yếu tố chủ quan. Nếu tự động hóa hoàn toàn, hệ thống rất dễ đưa ra lựa chọn không đúng gu và làm người dùng mất niềm tin. Hướng tăng năng lực phù hợp hơn vì AI đóng vai trò hỗ trợ khám phá, không thay thế quyết định cá nhân.
+
+## 7. Bốn đường đi của trải nghiệm
+
+### Happy Path
+
+- Người dùng chọn 1 đến 2 ảnh đại diện đúng gu.
+- Hệ thống tính độ tương đồng và trả về 3 quán có không gian gần nhất.
+- Người dùng xem thông tin quán, lộ trình và ra quyết định.
+
+### Khi AI không chắc
+
+- Người dùng chọn các ảnh có phong cách quá đối lập.
+- Hệ thống phát hiện tín hiệu nhiễu và hiển thị thông báo như: *"Rất khó để gợi ý chính xác không gian theo lựa chọn này."*
+- Người dùng được yêu cầu chọn lại hoặc thu hẹp sở thích.
+
+### Khi AI sai
+
+- Kết quả trả về không đúng vibe người dùng mong muốn.
+- Người dùng dùng nút `Kết quả không phù hợp` để loại batch gợi ý hiện tại.
+
+### Khi người dùng sửa
+
+- Hệ thống reset lại luồng chọn ảnh ban đầu.
+- Đồng thời lưu log về lựa chọn trước đó để phục vụ phân tích sai lệch và cải tiến thuật toán.
+
+## 8. Những kiểu lỗi đáng lo nhất
+
+### Lỗi 1. Vector Cancellation làm giảm độ chính xác
+
+- **Nguyên nhân:** Người dùng chọn các hình ảnh mang phong cách hoàn toàn trái ngược nhau.
+- **Hậu quả:** Vector trung bình bị triệt tiêu, kết quả gợi ý trở nên thiếu nhất quán.
+- **Cách xử lý:** Giới hạn số lượng ảnh được chọn, đặt ngưỡng `Cosine Similarity`, và từ chối trả kết quả nếu độ chắc chắn quá thấp.
+
+### Lỗi 2. Sai lệch giữa hình ảnh và thực tế
+
+- **Nguyên nhân:** Ảnh quán đã chỉnh sửa quá mạnh hoặc chất lượng không gian ngoài đời đã thay đổi.
+- **Hậu quả:** Người dùng đến nơi nhưng trải nghiệm không khớp kỳ vọng, làm giảm niềm tin vào sản phẩm.
+- **Cách xử lý:** Dùng tập dữ liệu tĩnh đã được đội ngũ kiểm duyệt thủ công trong giai đoạn MVP để đảm bảo ảnh và thực tế bám sát nhau nhất có thể.
+
+## 9. Kế hoạch kiểm thử và bằng chứng demo
+
+### Kịch bản tiêu chuẩn
+
+- **Đầu vào:** Người dùng chọn 1 ảnh quán có phong cách cổ điển hoặc vintage.
+- **Kỳ vọng:** Hệ thống trả về 3 quán có thiết kế và ánh sáng tương đồng.
+
+### Kịch bản góc cạnh
+
+- **Đầu vào:** Người dùng chọn đồng thời 1 ảnh dark-academia và 1 ảnh không gian mở, sáng mạnh.
+- **Kỳ vọng:** Hệ thống nhận diện lựa chọn thiếu nhất quán và yêu cầu người dùng chọn lại thay vì cố trả ra kết quả sai.
+
+### Bằng chứng chuẩn bị cho demo
+
+- Bộ dữ liệu tĩnh ở định dạng `CSV/JSON`.
+- Mã nguồn tính toán embedding và `Cosine Similarity`.
+- Video hoặc quy trình chạy thử sẵn cho cả happy case và corner case để giảm rủi ro khi trình bày.
+
+## 10. Phân công
+
+| Thành viên | Phụ trách |
+| --- | --- |
+| **Huy** | Quản lý tài liệu chuyên môn, Product Canvas, sơ đồ UX Flow, xây dựng nội dung slide và thuyết trình. |
+| **Hà** | Thiết kế frontend và kiểm thử hệ thống. |
+| **Kiên** | Chuẩn bị dataset tĩnh khoảng 30 quán, gắn nhãn hình ảnh và xuất vector embedding. |
+| **Thảo** | Phát triển backend, xây dựng logic vector trung bình, `Cosine Similarity` và API trả kết quả. |

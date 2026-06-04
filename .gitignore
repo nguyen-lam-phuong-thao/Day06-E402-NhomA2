@@ -3,5 +3,5 @@
 .pytest_cache/
 __pycache__/
 *.pyc
-/data
-.local/
+/codebase/data/
+/codebase/.local/
