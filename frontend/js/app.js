@@ -27,6 +27,7 @@ const elements = {
   clock: document.getElementById("clock"),
   deck: document.getElementById("deck"),
   deckEmpty: document.getElementById("deck-empty"),
+  recommendCtaWrap: document.getElementById("recommend-cta-wrap"),
   loadingText: document.getElementById("loading-txt"),
   loadingBar: document.getElementById("loading-bar"),
   resultsDesc: document.getElementById("results-desc"),
@@ -43,6 +44,7 @@ const elements = {
     nope: document.getElementById("btn-nope"),
     like: document.getElementById("btn-love"),
     location: document.getElementById("btn-location"),
+    recommend: document.getElementById("btn-recommend"),
   },
   detail: {
     image: document.getElementById("d-img"),
@@ -182,7 +184,14 @@ function renderStars(rating, size = 13) {
 }
 
 function roundMatchPercentage(score) {
-  return Math.round(score * 100);
+  const numericScore = Number(score);
+  if (Number.isNaN(numericScore)) {
+    return 0;
+  }
+  if (numericScore <= 1) {
+    return Math.round(numericScore * 100);
+  }
+  return Math.round(numericScore);
 }
 
 function resetLoadingAnimation() {
@@ -213,6 +222,41 @@ function hideDeckEmptyState() {
   elements.deckEmpty.style.display = "none";
 }
 
+function updateRecommendCta() {
+  const hasSelection = state.selectedSeedCafes.length > 0;
+  elements.recommendCtaWrap?.classList.toggle("visible", hasSelection);
+
+  if (!elements.buttons.recommend) {
+    return;
+  }
+
+  elements.buttons.recommend.disabled = !hasSelection;
+  elements.buttons.recommend.style.opacity = hasSelection ? "" : "0.55";
+  elements.buttons.recommend.style.cursor = hasSelection ? "" : "not-allowed";
+
+  if (!hasSelection) {
+    elements.buttons.recommend.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9L12 3z"/>
+        <path d="m19 16-.9 2.1L16 19l2.1.9L19 22l.9-2.1L22 19l-2.1-.9L19 16z"/>
+        <path d="m5 2-.9 2.1L2 5l2.1.9L5 8l.9-2.1L8 5l-2.1-.9L5 2z"/>
+      </svg>
+      Recommend
+    `;
+    return;
+  }
+
+  const pickLabel = state.selectedSeedCafes.length === 1 ? "1 pick" : "2 picks";
+  elements.buttons.recommend.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9L12 3z"/>
+      <path d="m19 16-.9 2.1L16 19l2.1.9L19 22l.9-2.1L22 19l-2.1-.9L19 16z"/>
+      <path d="m5 2-.9 2.1L2 5l2.1.9L5 8l.9-2.1L8 5l-2.1-.9L5 2z"/>
+    </svg>
+    Recommend from ${pickLabel}
+  `;
+}
+
 function updateSelectionCounter() {
   elements.likeDots.forEach((dot, index) => {
     if (!dot) {
@@ -228,7 +272,9 @@ function updateSelectionCounter() {
     dot.classList.toggle("filled", index < state.selectedSeedCafes.length);
   });
 
-  elements.likeLabel.textContent = `${state.selectedSeedCafes.length}/${MAX_SELECTED_SEEDS}`;
+  const selectedCount = state.selectedSeedCafes.length;
+  elements.likeLabel.textContent = `${selectedCount} liked · ${state.excludedSeedCafeIds.size} picks`;
+  updateRecommendCta();
 }
 
 function resetSwipeSession() {
@@ -528,6 +574,14 @@ function handleLocation() {
   openExternalUrl(currentCafe.google_maps_url);
 }
 
+function handleRecommend() {
+  if (state.selectedSeedCafes.length === 0) {
+    toast("Please like at least one cafe before recommending.", "warn");
+    return;
+  }
+  void startAnalysis();
+}
+
 async function startAnalysis() {
   if (state.isAnalyzing || state.selectedSeedCafes.length === 0) {
     return;
@@ -695,6 +749,10 @@ function toast(message, type = "info") {
   toastElement.innerHTML = `<span>${message}</span>`;
   elements.toasts.appendChild(toastElement);
   window.setTimeout(() => toastElement.remove(), 2600);
+}
+
+function backToPicking() {
+  showScreen("screen-swipe");
 }
 
 function initializeApp() {
