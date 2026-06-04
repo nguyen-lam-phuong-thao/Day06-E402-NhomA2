@@ -26,15 +26,18 @@ Kết quả là flow chọn quán chậm, rời rạc và dễ mệt mỏi trư�
 
 Prototype đề xuất một flow ngắn:
 
-1. Hiển thị 4 ảnh đại diện cho 4 kiểu vibe khác nhau.
-2. User chọn ảnh gần với gu của mình nhất.
-3. Hệ thống dùng AI + dataset quán đã chuẩn hóa để trả về **3 quán tương tự**.
-4. Mỗi kết quả luôn đi kèm:
+1. Hiển thị **3 ảnh đại diện cho 3 kiểu vibe khác nhau**.
+2. User chọn **2 ảnh** gần với gu của mình nhất.
+3. Hệ thống chuyển mỗi ảnh thành một tín hiệu preference riêng, sau đó **lấy trung bình của 2 lựa chọn** để tạo ra vibe profile chung cho session hiện tại.
+4. Hệ thống dùng AI + dataset quán đã chuẩn hóa để trả về **3 quán tương tự**.
+5. Mỗi kết quả luôn đi kèm:
    - Tên quán
    - Ảnh chính
    - Rating
    - Địa chỉ
    - Lý do match ngắn
+
+Logic này giúp recommendation bớt cực đoan theo một ảnh đơn lẻ, đồng thời phản ánh gu người dùng linh hoạt hơn, ví dụ vừa thích sáng sủa để làm việc, vừa thích không gian có tính thẩm mỹ để chụp ảnh.
 
 ## 4. AI role
 
@@ -49,7 +52,8 @@ Nhóm chọn hướng **Augmentation**.
 Build slice hiện tại tập trung vào một case rõ ràng:
 
 - User đang muốn chọn quán cà phê để đi trong hôm nay.
-- Đầu vào là lựa chọn ảnh thay vì text prompt dài.
+- Đầu vào là lựa chọn **2 trong 3 ảnh** thay vì text prompt dài.
+- Hệ thống dùng **điểm trung bình của 2 ảnh đã chọn** để tính mức độ phù hợp với từng quán trong dataset.
 - Đầu ra là shortlist quán có vibe tương đồng trong dataset đã crawl sẵn.
 
 Failure mode cần xử lý ngay trong prototype:
@@ -63,17 +67,18 @@ Failure mode cần xử lý ngay trong prototype:
 
 ### Happy path
 
-- User chọn 1 ảnh đại diện cho vibe mong muốn.
+- User chọn 2 ảnh đại diện cho gu mong muốn.
+- Hệ thống kết hợp 2 tín hiệu này thành một profile trung bình.
 - Hệ thống trả về 3-5 quán phù hợp, có thông tin đủ để cân nhắc ngay.
 
 ### Low-confidence path
 
-- Nếu 1 ảnh chưa đủ tín hiệu, hệ thống hỏi thêm 1 bước hẹp để làm rõ nhu cầu.
+- Nếu 2 ảnh vẫn tạo ra tín hiệu chưa đủ rõ hoặc cho ra nhiều quán có điểm gần nhau, hệ thống hỏi thêm 1 bước hẹp để làm rõ nhu cầu.
 
 ### Failure path
 
 - Nếu kết quả không hợp gu hoặc không tiện, user có thể:
-  - Đổi ảnh
+  - Chọn lại 2 ảnh khác
   - Đổi khu vực
   - Ẩn quán này
 
@@ -92,6 +97,7 @@ Prototype dự kiến dùng dataset mẫu khoảng **30 quán**, với các fiel
 - Rating
 - Category
 - AI caption ngắn mô tả vibe
+- Vibe score hoặc tag để tính độ gần với profile trung bình từ 2 ảnh người dùng chọn
 
 ## 8. Current repository status
 
@@ -112,7 +118,7 @@ Các file tham chiếu chính:
 Các hạng mục tiếp theo để hoàn thiện prototype:
 
 - Chuẩn hóa dataset quán
-- Xây dựng logic match vibe từ ảnh đầu vào
+- Xây dựng logic match vibe từ **2 ảnh đầu vào** và cơ chế lấy điểm trung bình
 - Thiết kế UI image-first cho bước chọn quán
 - Bổ sung logic filter theo khu vực, rating và khoảng cách
 - Tạo flow correction để refine kết quả trong session
