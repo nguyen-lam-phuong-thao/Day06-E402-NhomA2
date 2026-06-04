@@ -1,119 +1,405 @@
-# Mini Hackathon - AI Cafe Vibe Recommender
+# AI Cafe Vibe Recommender
 
-## 1. Project overview
+## 1. Project Overview
 
-Đây là prototype cho bài toán **local discovery / recommendation**, tập trung vào việc giúp user chọn quán cà phê để đi trong ngày mà không phải mở nhiều app và lọc thủ công.
+AI Cafe Vibe Recommender is a mini hackathon prototype for local cafe discovery.
 
-Ý tưởng cốt lõi là:
+Users usually know what kind of cafe they like when they see an image, but they often find it hard to describe that vibe with keywords. This prototype allows users to select one or two vibe images, then recommends cafes whose Google Maps images are visually and semantically similar.
 
-- User thường **chọn bằng vibe qua hình ảnh trước**.
-- Sau đó mới mở Google Maps để kiểm tra **địa chỉ, rating, khoảng cách**.
-- Pain không phải thiếu danh sách quán, mà là **khó diễn tả gu quán bằng text** và mất thời gian verify từng quán.
+The system works like a visual RAG recommender.
 
-Prototype này dùng AI để **augment bước hiểu visual preference** từ ảnh user chọn, sau đó trả về shortlist quán phù hợp hơn thay vì bắt user tự tìm qua nhiều nguồn.
+Cafe images are collected from Google Maps. An AI Vision model is used to describe each cafe image. These descriptions are converted into embeddings and stored in the database. When a user selects a vibe image, the system describes that image, converts it into an embedding, and retrieves the most similar cafes based on similarity score.
 
-## 2. Problem statement
+## 2. Problem Statement
 
-User 18-30 tuổi, chủ yếu là sinh viên hoặc nhân viên văn phòng, thường gặp khó khăn khi chọn quán cà phê vì:
+Users aged 18-30, especially students and office workers, often struggle when choosing a cafe because they know the type of space they like visually, but they do not always know how to describe it in text.
 
-- Biết mình thích kiểu không gian nào khi nhìn ảnh.
-- Nhưng khó mô tả bằng từ khóa.
-- Phải nhảy giữa Instagram, TikTok và Google Maps để chốt quán.
+Current cafe discovery flow is fragmented.
 
-Kết quả là flow chọn quán chậm, rời rạc và dễ mệt mỏi trước khi ra quyết định.
+Users may look at photos on Instagram or TikTok first, then open Google Maps to check rating, address, and reviews. This creates a slow and tiring decision-making process.
 
-## 3. Proposed solution
+The pain point is not the lack of cafe options. The real pain point is that users find it difficult to express their visual preference and verify suitable cafes quickly.
 
-Prototype đề xuất một flow ngắn:
+## 3. Proposed Solution
 
-1. Hiển thị **3 ảnh đại diện cho 3 kiểu vibe khác nhau**.
-2. User chọn **1-2 ảnh** gần với gu của mình nhất.
-3. Hệ thống chuyển mỗi ảnh thành một tín hiệu preference riêng.
-4. Nếu user chọn **1 ảnh**, hệ thống dùng trực tiếp profile của ảnh đó.
-5. Nếu user chọn **nhiều hơn 1 ảnh**, hệ thống **lấy trung bình preference** của các ảnh đã chọn để tạo ra vibe profile chung cho session hiện tại.
-6. Hệ thống dùng AI + dataset quán đã chuẩn hóa để trả về **3 quán tương tự**.
-7. Mỗi kết quả luôn đi kèm:
-   - Tên quán
-   - Ảnh chính
-   - Rating
-   - Địa chỉ
-   - Lý do match ngắn
+The prototype provides a short visual-first recommendation flow.
 
-Logic này giúp recommendation phản ánh gu người dùng linh hoạt hơn. User không bị ép chỉ thích đúng một vibe, nhưng hệ thống vẫn giữ tín hiệu đủ rõ để tránh kết quả bị loãng.
+The user selects one or two vibe images that match their current preference. The system then uses AI to understand the visual style of the selected image and retrieves similar cafes from the prepared cafe database.
 
-## 4. AI role
+Each recommendation result includes the cafe name, main image, rating, address, category, similarity score, and a short reason explaining why the cafe matches the selected image.
 
-Nhóm chọn hướng **Augmentation**.
+## 4. Core User Flow
 
-- AI hỗ trợ nhận diện gu từ ảnh và gợi ý shortlist.
-- User vẫn là người quyết định quán cuối cùng.
-- Hệ thống không tự động "chốt hộ" vì taste rất chủ quan và dữ liệu hình ảnh dễ gây hiểu sai.
+```text
+User opens the app
+        ↓
+System shows 3 vibe images
+        ↓
+User selects 1 or 2 images
+        ↓
+System sends selected image data to backend
+        ↓
+AI describes the selected image
+        ↓
+System converts the description into an embedding
+        ↓
+System compares it with cafe embeddings in the database
+        ↓
+System ranks cafes by similarity score
+        ↓
+System returns the top 3 most similar cafes
+        ↓
+User views cafe details and opens Google Maps if interested
+```
 
-## 5. Prototype scope
+## 5. AI Role
 
-Build slice hiện tại tập trung vào một case rõ ràng:
+The project follows an augmentation approach.
 
-- User đang muốn chọn quán cà phê để đi trong hôm nay.
-- Đầu vào là lựa chọn **1-2 trong 3 ảnh** thay vì text prompt dài.
-- Nếu user chọn nhiều hơn 1 ảnh, hệ thống dùng **điểm trung bình preference** của các ảnh đã chọn để tính mức độ phù hợp với từng quán trong dataset.
-- Đầu ra là shortlist quán có vibe tương đồng trong dataset đã crawl sẵn.
+AI does not make the final decision for the user. Instead, AI helps convert visual preference into searchable semantic information.
 
-Failure mode cần xử lý ngay trong prototype:
+AI is used in three main places.
 
-- Kết quả lệch vibe
-- Quán quá xa
-- Rating thấp
-- Kết quả không đủ tin cậy để user ra quyết định
+### 5.1 Cafe Image Understanding
 
-## 6. Core user flows
+Cafe images from Google Maps are processed by an AI Vision model.
 
-### Happy path
+The model generates a short description of the cafe image, including the atmosphere, interior style, lighting, space, and category.
 
-- User chọn 1 hoặc 2 ảnh đại diện cho gu mong muốn.
-- Nếu user chọn 2 ảnh, hệ thống kết hợp 2 tín hiệu này thành một profile trung bình.
-- Hệ thống trả về 3-5 quán phù hợp, có thông tin đủ để cân nhắc ngay.
+Example output:
 
-### Low-confidence path
+```json
+{
+  "cafe_name": "The Hidden Garden Cafe",
+  "category": "Garden cafe",
+  "ai_description": "A cozy garden cafe with many green plants, warm lighting, wooden furniture, and a quiet relaxing atmosphere."
+}
+```
 
-- Nếu 1-2 ảnh vẫn tạo ra tín hiệu chưa đủ rõ hoặc cho ra nhiều quán có điểm gần nhau, hệ thống hỏi thêm 1 bước hẹp để làm rõ nhu cầu.
+### 5.2 User Image Understanding
 
-### Failure path
+When the user selects a vibe image, the same AI Vision process is used to describe the selected image.
 
-- Nếu kết quả không hợp gu hoặc không tiện, user có thể:
-  - Chọn lại 1-2 ảnh khác
-  - Đổi khu vực
-  - Ẩn quán này
+Example output:
 
-### Correction path
+```json
+{
+  "preference_description": "The user seems to prefer a warm and cozy cafe with natural lighting, wooden furniture, green plants, and a peaceful atmosphere."
+}
+```
 
-- Khi user bấm `không đúng gu`, hệ thống không reset hoàn toàn.
-- Correction sẽ được dùng để đổi shortlist trong cùng session.
+### 5.3 Recommendation Explanation
 
-## 7. Data requirements
+After the system retrieves similar cafes, AI or a simple template can generate a short match reason.
 
-Prototype dự kiến dùng dataset mẫu khoảng **30 quán**, với các field chính:
+Example:
 
-- Tên quán
-- Địa chỉ
-- Ảnh chính
-- Rating
-- Category
-- AI caption ngắn mô tả vibe
-- Vibe score hoặc tag để tính độ gần với profile từ 1 ảnh hoặc profile trung bình từ nhiều ảnh người dùng chọn
+```text
+This cafe matches your selected vibe because it has warm lighting, green plants, and a quiet cozy atmosphere similar to the image you chose.
+```
 
-## 9. Limitations
+## 6. Recommendation Logic
 
-Prototype hiện có các giới hạn rõ ràng:
+The recommendation logic is based on semantic similarity.
 
-- Evidence hiện thiên về self-observation của nhóm.
-- Dataset còn nhỏ và có thể bias theo khu vực thành thị.
-- Chất lượng recommendation phụ thuộc mạnh vào chất lượng ảnh và dữ liệu quán.
-- Chưa phải sản phẩm production-ready.
+The system does not use manually assigned vibe scores such as cozy, minimal, or quiet. Instead, it compares the embedding of the user-selected image description with the embeddings of cafe image descriptions.
 
-## 10. Team
+The main ranking metric is similarity score.
 
-- Huy: Research / evidence
-- Thảo: SPEC
-- Kiên, Hà, Thảo: Prototype
-- Hà: Test / failure path
-- Huy: Demo script / repo
+```text
+similarity_score = cosine_similarity(user_image_embedding, cafe_image_embedding)
+```
+
+Cafes with higher similarity scores are ranked higher.
+
+The output is the top 3 cafes with the highest similarity scores.
+
+## 7. Data Requirements
+
+The prototype uses a small prepared dataset of around 30 cafes.
+
+Each cafe record contains:
+
+```json
+{
+  "id": "cafe_001",
+  "name": "The Hidden Garden Cafe",
+  "address": "District 1, Ho Chi Minh City",
+  "rating": 4.6,
+  "category": "Garden cafe",
+  "image_url": "https://example.com/cafe-image.jpg",
+  "google_maps_url": "https://maps.google.com/...",
+  "ai_description": "A cozy garden cafe with many green plants, warm lighting, wooden furniture, and a quiet relaxing atmosphere.",
+  "embedding": [0.012, -0.083, 0.092]
+}
+```
+
+For the hackathon prototype, the dataset can be stored in a JSON or CSV file.
+
+A full production database is not required at this stage.
+
+## 8. System Architecture
+
+```text
+Google Maps Cafe Images
+        ↓
+AI Vision Captioning
+        ↓
+Cafe Descriptions
+        ↓
+Text Embedding
+        ↓
+Cafe Database
+        ↓
+
+User Selects Vibe Image
+        ↓
+AI Vision Captioning
+        ↓
+User Preference Description
+        ↓
+Text Embedding
+        ↓
+Similarity Search
+        ↓
+Top 3 Cafe Recommendations
+```
+
+## 9. API Design
+
+### 9.1 Get Vibe Images
+
+```http
+GET /api/vibes
+```
+
+Returns the 3 vibe images shown to the user.
+
+Example response:
+
+```json
+{
+  "vibes": [
+    {
+      "id": "vibe_01",
+      "image_url": "/images/vibe_01.jpg",
+      "label": "Cozy Green Cafe"
+    },
+    {
+      "id": "vibe_02",
+      "image_url": "/images/vibe_02.jpg",
+      "label": "Minimal Study Cafe"
+    },
+    {
+      "id": "vibe_03",
+      "image_url": "/images/vibe_03.jpg",
+      "label": "Vintage Warm Cafe"
+    }
+  ]
+}
+```
+
+### 9.2 Recommend Cafes
+
+```http
+POST /api/recommend
+```
+
+Request body:
+
+```json
+{
+  "selected_vibe_ids": ["vibe_01", "vibe_03"]
+}
+```
+
+Response:
+
+```json
+{
+  "query_description": "The user prefers a cozy cafe with warm lighting, green plants, natural materials, and a relaxing atmosphere.",
+  "results": [
+    {
+      "id": "cafe_001",
+      "name": "The Hidden Garden Cafe",
+      "image_url": "https://example.com/cafe-image.jpg",
+      "rating": 4.6,
+      "address": "District 1, Ho Chi Minh City",
+      "category": "Garden cafe",
+      "similarity_score": 0.89,
+      "reason": "This cafe matches your selected vibe because it has green plants, warm lighting, and a cozy relaxing atmosphere.",
+      "google_maps_url": "https://maps.google.com/..."
+    }
+  ]
+}
+```
+
+### 9.3 Feedback
+
+```http
+POST /api/feedback
+```
+
+Request body:
+
+```json
+{
+  "cafe_id": "cafe_001",
+  "feedback": "not_my_vibe"
+}
+```
+
+For the MVP, feedback is handled simply.
+
+If the user clicks `Not my vibe`, the system hides that cafe and returns the next most similar cafe from the ranking list.
+
+## 10. Frontend Screens
+
+### Screen 1: Vibe Selection
+
+The user sees 3 cafe vibe images.
+
+The user can select 1 or 2 images.
+
+Main button:
+
+```text
+Find my cafe vibe
+```
+
+### Screen 2: Loading
+
+The system shows a short loading state.
+
+Example:
+
+```text
+Analyzing your vibe...
+```
+
+### Screen 3: Recommendation Results
+
+The system displays the top 3 most similar cafes.
+
+Each cafe card includes:
+
+```text
+Cafe name
+Main image
+Rating
+Address
+Category
+Similarity score
+Match reason
+Open in Google Maps button
+Not my vibe button
+```
+
+## 11. Tech Stack
+
+Recommended stack for the hackathon prototype:
+
+```text
+Frontend: Next.js
+Backend: Next.js API Routes or FastAPI
+Data storage: JSON or CSV
+AI Vision: GPT-4o, Gemini Vision, or Claude Vision
+Embedding: OpenAI Embedding or Sentence Transformers
+Similarity Search: Cosine Similarity
+Deployment: Vercel, Render, or Railway
+```
+
+For the fastest prototype, the project can be built as a single Next.js app with local JSON data.
+
+## 12. MVP Scope
+
+The MVP includes:
+
+```text
+3 predefined vibe images
+User can select 1 or 2 vibe images
+Around 30 cafes in the dataset
+AI-generated description for each cafe image
+Embedding for each cafe description
+Similarity-based recommendation
+Top 3 cafe results
+Cafe name, image, rating, address, category, similarity score, and match reason
+Open in Google Maps button
+Not my vibe button
+```
+
+The MVP does not include:
+
+```text
+Realtime Google Maps crawling
+User-uploaded images
+GPS-based distance calculation
+Complex ranking with rating or distance weight
+Manual vibe score
+Chatbot conversation
+Production-ready database
+```
+
+## 13. Handling Multiple Selected Images
+
+If the user selects two images, the system combines the two selected image descriptions into one preference description.
+
+Example:
+
+```text
+Image 1 description: A bright minimal cafe with clean interior and quiet study-friendly atmosphere.
+
+Image 2 description: A cozy green cafe with plants, warm lighting, and relaxing atmosphere.
+
+Combined query description: The user prefers a cafe that feels bright, clean, cozy, green, relaxing, and suitable for studying.
+```
+
+The combined description is then converted into one embedding and used for similarity search.
+
+## 14. Failure Handling
+
+### Case 1: Result does not match user taste
+
+The user can click:
+
+```text
+Not my vibe
+```
+
+The system hides that cafe and returns the next highest similarity result.
+
+### Case 2: Not enough strong matches
+
+If similarity scores are too low, the system can show a message:
+
+```text
+We could not find a very close match, but here are the nearest options from our current dataset.
+```
+
+### Case 3: Dataset is too small
+
+The system clearly communicates that this is a prototype using a limited dataset.
+
+## 15. Evaluation Metrics
+
+The prototype can be evaluated with the following metrics:
+
+```text
+Top-3 relevance
+Recommendation acceptance rate
+Not my vibe rate
+Average similarity score
+Time to recommendation
+User satisfaction score
+```
+
+## 16. Team Roles
+
+```text
+Huy: Research, evidence, demo script, repo
+Thảo: SPEC, product flow, AI logic
+Kiên: Frontend prototype
+Hà: Dataset, testing, failure path
+Kiên, Hà, Thảo: Prototype implementation
+```
+
