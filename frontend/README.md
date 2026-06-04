@@ -14,3 +14,14 @@ Neu user khong thich ca 5 seed hien tai:
 - frontend goi lai `GET /api/seed-cafes`
 - kem `excluded_seed_cafe_ids`
 - backend random 5 seed khac tu category khac neu con
+
+## Frontend files
+
+- `index.html` giu layout va style chinh
+- `frontend/js/app.js` chua toan bo state, rendering, va API integration
+
+## API base URL
+
+- Mac dinh frontend se goi `http://127.0.0.1:8000` khi chay local
+- Co the override bang `window.COFFEEHOLIC_CONFIG = { apiBaseUrl: "..." }`
+- Hoac set `data-api-base-url` tren the `body`

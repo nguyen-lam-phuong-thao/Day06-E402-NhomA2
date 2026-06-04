@@ -44,7 +44,8 @@ Example response:
       "image_url": "https://...",
       "rating": 4.2,
       "address": "87C P. Ly Thuong Kiet, Hoan Kiem, Ha Noi",
-      "category": "Bakery cafe"
+      "category": "Bakery cafe",
+      "google_maps_url": "https://..."
     }
   ],
   "has_more": true,

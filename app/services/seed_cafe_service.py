@@ -59,6 +59,7 @@ class SeedCafeService:
                     rating=cafe.rating,
                     address=cafe.address,
                     category=cafe.category,
+                    google_maps_url=cafe.google_maps_url,
                 )
                 for cafe in seed_cafes
             ],

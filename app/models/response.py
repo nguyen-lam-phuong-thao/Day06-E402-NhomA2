@@ -14,6 +14,7 @@ class SeedCafeResponseItem(BaseModel):
     rating: float
     address: str
     category: str
+    google_maps_url: str
 
 
 class SeedCafesResponse(BaseModel):

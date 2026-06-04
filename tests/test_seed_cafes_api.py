@@ -11,3 +11,4 @@ def test_get_seed_cafes_returns_five_or_fewer_seed_items(client):
     assert len(payload["seed_cafes"]) <= 5
     categories = [item["category"] for item in payload["seed_cafes"]]
     assert len(categories) == len(set(categories))
+    assert all(item["google_maps_url"] for item in payload["seed_cafes"])
