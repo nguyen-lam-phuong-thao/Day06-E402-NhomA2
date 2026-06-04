@@ -27,17 +27,19 @@ Kết quả là flow chọn quán chậm, rời rạc và dễ mệt mỏi trư�
 Prototype đề xuất một flow ngắn:
 
 1. Hiển thị **3 ảnh đại diện cho 3 kiểu vibe khác nhau**.
-2. User chọn **2 ảnh** gần với gu của mình nhất.
-3. Hệ thống chuyển mỗi ảnh thành một tín hiệu preference riêng, sau đó **lấy trung bình của 2 lựa chọn** để tạo ra vibe profile chung cho session hiện tại.
-4. Hệ thống dùng AI + dataset quán đã chuẩn hóa để trả về **3 quán tương tự**.
-5. Mỗi kết quả luôn đi kèm:
+2. User chọn **1-2 ảnh** gần với gu của mình nhất.
+3. Hệ thống chuyển mỗi ảnh thành một tín hiệu preference riêng.
+4. Nếu user chọn **1 ảnh**, hệ thống dùng trực tiếp profile của ảnh đó.
+5. Nếu user chọn **nhiều hơn 1 ảnh**, hệ thống **lấy trung bình preference** của các ảnh đã chọn để tạo ra vibe profile chung cho session hiện tại.
+6. Hệ thống dùng AI + dataset quán đã chuẩn hóa để trả về **3 quán tương tự**.
+7. Mỗi kết quả luôn đi kèm:
    - Tên quán
    - Ảnh chính
    - Rating
    - Địa chỉ
    - Lý do match ngắn
 
-Logic này giúp recommendation bớt cực đoan theo một ảnh đơn lẻ, đồng thời phản ánh gu người dùng linh hoạt hơn, ví dụ vừa thích sáng sủa để làm việc, vừa thích không gian có tính thẩm mỹ để chụp ảnh.
+Logic này giúp recommendation phản ánh gu người dùng linh hoạt hơn. User không bị ép chỉ thích đúng một vibe, nhưng hệ thống vẫn giữ tín hiệu đủ rõ để tránh kết quả bị loãng.
 
 ## 4. AI role
 
@@ -52,8 +54,8 @@ Nhóm chọn hướng **Augmentation**.
 Build slice hiện tại tập trung vào một case rõ ràng:
 
 - User đang muốn chọn quán cà phê để đi trong hôm nay.
-- Đầu vào là lựa chọn **2 trong 3 ảnh** thay vì text prompt dài.
-- Hệ thống dùng **điểm trung bình của 2 ảnh đã chọn** để tính mức độ phù hợp với từng quán trong dataset.
+- Đầu vào là lựa chọn **1-2 trong 3 ảnh** thay vì text prompt dài.
+- Nếu user chọn nhiều hơn 1 ảnh, hệ thống dùng **điểm trung bình preference** của các ảnh đã chọn để tính mức độ phù hợp với từng quán trong dataset.
 - Đầu ra là shortlist quán có vibe tương đồng trong dataset đã crawl sẵn.
 
 Failure mode cần xử lý ngay trong prototype:
@@ -67,18 +69,18 @@ Failure mode cần xử lý ngay trong prototype:
 
 ### Happy path
 
-- User chọn 2 ảnh đại diện cho gu mong muốn.
-- Hệ thống kết hợp 2 tín hiệu này thành một profile trung bình.
+- User chọn 1 hoặc 2 ảnh đại diện cho gu mong muốn.
+- Nếu user chọn 2 ảnh, hệ thống kết hợp 2 tín hiệu này thành một profile trung bình.
 - Hệ thống trả về 3-5 quán phù hợp, có thông tin đủ để cân nhắc ngay.
 
 ### Low-confidence path
 
-- Nếu 2 ảnh vẫn tạo ra tín hiệu chưa đủ rõ hoặc cho ra nhiều quán có điểm gần nhau, hệ thống hỏi thêm 1 bước hẹp để làm rõ nhu cầu.
+- Nếu 1-2 ảnh vẫn tạo ra tín hiệu chưa đủ rõ hoặc cho ra nhiều quán có điểm gần nhau, hệ thống hỏi thêm 1 bước hẹp để làm rõ nhu cầu.
 
 ### Failure path
 
 - Nếu kết quả không hợp gu hoặc không tiện, user có thể:
-  - Chọn lại 2 ảnh khác
+  - Chọn lại 1-2 ảnh khác
   - Đổi khu vực
   - Ẩn quán này
 
@@ -97,34 +99,9 @@ Prototype dự kiến dùng dataset mẫu khoảng **30 quán**, với các fiel
 - Rating
 - Category
 - AI caption ngắn mô tả vibe
-- Vibe score hoặc tag để tính độ gần với profile trung bình từ 2 ảnh người dùng chọn
+- Vibe score hoặc tag để tính độ gần với profile từ 1 ảnh hoặc profile trung bình từ nhiều ảnh người dùng chọn
 
-## 8. Current repository status
-
-Repo này hiện đang phục vụ cho phần **spec và định hướng prototype**.
-
-Nguồn nội dung chính của dự án đang nằm trong thư mục:
-
-`Batch02-Day05-AI-Product-Labs/02-group-spec`
-
-Các file tham chiếu chính:
-
-- `thin-spec-template.md`
-- `evidence-pack-template.md`
-- `synthesis-decide-toolkit.md`
-
-## 9. Backlog
-
-Các hạng mục tiếp theo để hoàn thiện prototype:
-
-- Chuẩn hóa dataset quán
-- Xây dựng logic match vibe từ **2 ảnh đầu vào** và cơ chế lấy điểm trung bình
-- Thiết kế UI image-first cho bước chọn quán
-- Bổ sung logic filter theo khu vực, rating và khoảng cách
-- Tạo flow correction để refine kết quả trong session
-- Viết test cases cho happy path, ambiguous path và correction path
-
-## 10. Limitations
+## 9. Limitations
 
 Prototype hiện có các giới hạn rõ ràng:
 
@@ -133,7 +110,7 @@ Prototype hiện có các giới hạn rõ ràng:
 - Chất lượng recommendation phụ thuộc mạnh vào chất lượng ảnh và dữ liệu quán.
 - Chưa phải sản phẩm production-ready.
 
-## 11. Team
+## 10. Team
 
 - Huy: Research / evidence
 - Thảo: SPEC
